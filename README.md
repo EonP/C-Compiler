@@ -42,6 +42,17 @@ To run a C program with this compiler:
     * Compile the C file into MIPS assembly -> the generated assembly file will appear in the asm_files/ folder (e.g. asm_files/test.asm)
     * Execute the MIPS program automatically using the MARS simulator in `tools/` folder
 
+## Try it out! ##
+
+Clone the project and from the root directory, run 
+```bash
+./compile_and_run.sh c_files/tictactoe.c
+```
+or 
+```bash
+./compile_and_run.sh c_files/fib.c
+```
+
 
 
 
