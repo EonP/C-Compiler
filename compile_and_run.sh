@@ -7,9 +7,9 @@ if [ "$#" -ne 1 ]; then
 fi
 
 # Define paths
-SOURCE_NAME="$1"
-SOURCE_FILE="src/test/code_gen_tests/c_files/$SOURCE_NAME"
-OUTPUT_FILE="src/test/code_gen_tests/asm_files/${SOURCE_NAME%.c}.asm"
+SOURCE_FILE="$1"
+SOURCE_NAME=$(basename "$SOURCE_FILE")
+OUTPUT_FILE="asm_files/${SOURCE_NAME%.c}.asm"
 JAR_FILE="tools/Mars4_5.jar"
 
 # Ensure the source file exists
