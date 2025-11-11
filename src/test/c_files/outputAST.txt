@@ -1,0 +1,1 @@
+Program(StructTypeDecl(StructType(x_s),VarDecl(ArrayType(ArrayType(ArrayType(PointerType(StructType(x_s)),3),3),2),s)))

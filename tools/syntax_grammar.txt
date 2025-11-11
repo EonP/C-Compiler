@@ -1,0 +1,105 @@
+# #  comment
+# () grouping
+# [] optional
+# *  zero or more
+# +  one or more
+# |  alternative
+
+program    ::= (include)* (structdecl | vardecl | fundecl | fundef)* EOF
+
+include    ::= "#include" STRING_LITERAL
+
+structdecl ::= structtype "{" (vardecl)+ "}" ";"    # structure declaration
+
+vardecl    ::= type IDENT ("[" INT_LITERAL "]")* ";" # variable declaration, (e.g. int a;), or multi-dimensional array declaration, (e.g. int a[2][5];)
+
+fundef    ::= type IDENT "(" params ")" block       # function definition
+
+fundecl   ::= type IDENT "(" params ")" ";"         # function declaration
+
+type       ::= ("int" | "char" | "void" | structtype) ("*")*
+structtype ::= "struct" IDENT
+
+params     ::= [ type IDENT ("[" INT_LITERAL "]")* ("," type IDENT ("[" INT_LITERAL "]")*)* ]
+
+stmt       ::= block
+             | "while" "(" exp ")" stmt              # while loop
+             | "if" "(" exp ")" stmt ["else" stmt]   # if then else
+             | "return" [exp] ";"                    # return
+             | exp ";"                               # expression statement, e.g. a function call
+             | "continue" ";"                        # continue
+             | "break" ";"                           # break
+
+block      ::= "{" (vardecl)* (stmt)* "}"
+
+exp        ::= "(" exp ")"
+             | exp "=" exp                           # assignment
+             | (IDENT | INT_LITERAL)
+             | ("-" | "+") exp
+             | CHAR_LITERAL
+             | STRING_LITERAL
+             | exp (">" | "<" | ">=" | "<=" | "!=" | "==" | "+" | "-" | "/" | "*" | "%" | "||" | "&&") exp  # binary operators
+             | arrayaccess | fieldaccess | valueat | addressof | funcall | sizeof | typecast
+
+funcall      ::= IDENT "(" [ exp ("," exp)* ] ")" # function call
+arrayaccess  ::= exp "[" exp "]"                  # array access
+fieldaccess  ::= exp "." IDENT                    # structure field member access
+valueat      ::= "*" exp                          # Value at operator (pointer indirection)
+addressof    ::= "&" exp                          # Address-of operator
+sizeof       ::= "sizeof" "(" type ")"            # size of type
+typecast     ::= "(" type ")" exp                 # type casting
+
+
+######################## ENCODING PRECEDENCE ##############################
+
+1 funcall ::= IDENT "(" [ exp ("," exp)* ] ")"  LTR
+1 arrayaccess ::= exp "[" exp "]"  LTR
+1 fieldaccess ::= exp "." IDENT  LTR
+2 Unary plus ::= "+" exp  RTL
+2 Unary minus ::= "-" exp  RTL
+2 Type cast ::= "(" type ")" exp  RTL
+2 Indirection ::= "*" exp  RTL
+2 Address of ::= "&" exp  RTL
+3 Mult/Div/Rem ::= exp ("*" | "/" | "%") exp  LTR
+4 Add/Sub ::= exp ("+" | "-") exp  LTR
+5 comparison ::= exp ("<" | "<=" |  ">" | ">=") exp  LTR
+6 equality ::= exp ("==" | "!=") exp  LTR
+7 Logand ::= exp "&&" exp  LTR
+8 Logor ::= exp "||" exp   LTR
+9 Assign ::= exp "=" exp   RTL
+
+Expr         ::= Assign
+Assign       ::= Logor ("=" Assign | eps)                             ::= Logor ("=" Logor)*
+Logor        ::= Logand ("||" Logor | eps)                            ::= Logand ("||" Logand)*
+Logand       ::= equality ("&&" Logand | eps)                         ::= equality ("&&" equality)*
+equality     ::= comparison (("==" | "!=") equality | eps)            ::= comparison (("==" | "!=") comparison)*
+comparison   ::= addsub (("<" | "<=" |  ">" | ">=") comparison | eps) ::= addsub (("<" | "<=" |  ">" | ">=") addsub)*
+addsub       ::= muldivrem (("+" | "-") addsub | eps)                 ::= muldivrem (("+" | "-") muldivrem)*
+muldivrem    ::= unary (("*" | "/" | "%") muldivrem | eps)            ::= unary (("*" | "/" | "%") unary)*
+
+unary        ::= ("+" | "-" | "*" | "&" | "(" type ")") unary
+              | primary
+
+primary      ::= IDENT
+              | INT_LITERAL
+              | CHAR_LITERAL
+              | STRING_LITERAL
+              | "sizeof" "(" type ")"
+              | IDENT "(" [ exp ("," exp)* ] ")"
+              | "(" exp ")"
+              | primary "[" exp "]"
+              | primary "." IDENT
+
+######################## REMOVING LEFT RECURSION ##############################
+
+primary      ::= IDENT primary_prime
+              | INT_LITERAL primary_prime
+              | CHAR_LITERAL primary_prime
+              | STRING_LITERAL primary_prime
+              | "sizeof" "(" type ")" primary_prime
+              | IDENT "(" [ exp ("," exp)* ] ")" primary_prime
+              | "(" exp ")" primary_prime
+
+primary_prime ::= "[" exp "]" primary_prime    ::=  ("[" exp "]" | "." IDENT)*
+               | "." IDENT primary_prime
+               | eps
