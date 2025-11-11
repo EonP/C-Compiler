@@ -9,8 +9,12 @@ fi
 # Define paths
 SOURCE_FILE="$1"
 SOURCE_NAME=$(basename "$SOURCE_FILE")
-OUTPUT_FILE="asm_files/${SOURCE_NAME%.c}.asm"
+OUTPUT_DIR="asm_files"
+OUTPUT_FILE="$OUTPUT_DIR/${SOURCE_NAME%.c}.asm"
 JAR_FILE="tools/Mars4_5.jar"
+
+# Ensure the output directory exists
+mkdir -p "$OUTPUT_DIR"
 
 # Ensure the source file exists
 if [ ! -f "$SOURCE_FILE" ]; then
